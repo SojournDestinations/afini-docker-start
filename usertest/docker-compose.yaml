@@ -1,0 +1,44 @@
+version: '2'
+services:
+  # Shared Services - message queues, databases, etc.
+  rabbitMQ:
+    container_name: shared-rabbitMQ
+    image: rabbitmq:3.6.5-management
+    hostname: my-rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
+  mongoDB:
+    container_name: shared-mongo
+    image: mongo:latest
+    ports:
+      - 27017:27017
+
+  #APIs
+  afini-membership-account-api:
+    container_name: api-mem-acct
+    image: afiniclub/api-mem-acct
+    environment:
+      NODE_ENV:
+    ports:
+      - 3001:3000
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  afini-user-api:
+    container_name: api-user
+    image: afiniclub/api-user
+    environment:
+      NODE_ENV:
+    ports:
+      - 3005:3005
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB

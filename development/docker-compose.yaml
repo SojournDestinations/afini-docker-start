@@ -1,0 +1,135 @@
+version: '2'
+services:
+  # Shared Services - message queues, databases, etc.
+  rabbitMQ:
+    container_name: shared-rabbitMQ
+    image: rabbitmq:3.6.5-management
+    hostname: my-rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
+  mongoDB:
+    container_name: shared-mongo
+    image: mongo:latest
+    ports:
+      - 27017:27017
+
+  #APIs
+  afini-membership-account-api:
+    container_name: api-mem-acct
+    build: ../../afini-membership-account-api
+    volumes:
+      - ../../afini-membership-account-api:/usr/src/app
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-common-library
+      - ../../afini-rabbitmq-plugin:/usr/src/app/node_modules/afini-rabbitmq-plugin
+    environment:
+      NODE_ENV:
+    ports:
+      - 3001:3000
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  afini-user-api:
+    container_name: api-user
+    build: ../../afini-user-api
+    volumes:
+      - ../../afini-user-api:/usr/src/app
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-common-library
+      - ../../afini-rabbitmq-plugin:/usr/src/app/node_modules/afini-rabbitmq-plugin
+    environment:
+      NODE_ENV:
+    ports:
+      - 3005:3005
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  #Services
+  afini-contact-info-service:
+    container_name: svc-contact-info
+    build: ../../afini-contact-info-service
+    volumes:
+      - ../../afini-contact-info-service:/usr/src/app
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-common-library
+      - ../../afini-rabbitmq-plugin:/usr/src/app/node_modules/afini-rabbitmq-plugin
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  afini-itops-rmqhandler:
+    container_name: svc-it-ops
+    build: ../../afini-itops-rmqhandler
+    volumes:
+      - ../../afini-itops-rmqhandler:/usr/src/app
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-common-library
+      - ../../afini-itops-contactinfo-plugin:/usr/src/app/node_modules/afini-itops-contactinfo-plugin
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-itops-contactinfo-plugin/node_modules/afini-common-library
+      - ../../afini-rabbitmq-plugin:/usr/src/app/node_modules/afini-rabbitmq-plugin
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  afini-membership-account-rmqhandler:
+    container_name: svc-mem-acct
+    build: ../../afini-membership-account-rmqhandler
+    volumes:
+      - ../../afini-membership-account-rmqhandler:/usr/src/app
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-common-library
+      - ../../afini-rabbitmq-plugin:/usr/src/app/node_modules/afini-rabbitmq-plugin
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  afini-user-rmqhandler:
+    container_name: svc-user
+    build: ../../afini-user-rmqhandler
+    volumes:
+      - ../../afini-user-rmqhandler:/usr/src/app
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-common-library
+      - ../../afini-rabbitmq-plugin:/usr/src/app/node_modules/afini-rabbitmq-plugin
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  #Web Sites
+  afini-public-site:
+    container_name: web-public
+    build: ../../afini-public-site
+    volumes:
+      - ../../afini-public-site:/usr/src/app
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-common-library
+      - ../../afini-membership-account-plugin:/usr/src/app/node_modules/afini-membership-account-plugin
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-membership-account-plugin/node_modules/afini-common-library
+      - ../../afini-user-plugin:/usr/src/app/node_modules/afini-user-plugin
+      - ../../afini-common-library:/usr/src/app/node_modules/afini-user-plugin/node_modules/afini-common-library
+    environment:
+      NODE_ENV:
+    ports:
+      - 9000:9000
