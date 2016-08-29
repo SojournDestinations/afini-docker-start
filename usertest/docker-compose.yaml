@@ -217,8 +217,10 @@ services:
       NODE_ENV:
     links:
       - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
     depends_on:
       - rabbitMQ
+      - mongoDB
 
   afini-membership-account-service:
     container_name: mem-acct-svc
