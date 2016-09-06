@@ -89,16 +89,15 @@ services:
     ports:
       - 3012:3012
     links:
+      - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
     depends_on:
+      - rabbitMQ
       - mongoDB
 
   afini-membership-account-api:
     container_name: mem-acct-api
     image: afiniclub/mem-acct-api
-    # build: ../../afini-membership-account-api
-    # volumes:
-    #   - ../../afini-membership-account-api:/usr/src/app
     environment:
       NODE_ENV:
     ports:
@@ -153,9 +152,6 @@ services:
   afini-residence-api:
     container_name: residence-api
     image: afiniclub/residence-api
-    # build: ../../afini-residence-manager
-    # volumes:
-    #   - ../../afini-residence-manager:/usr/src/app
     environment:
       NODE_ENV:
     ports:
@@ -169,7 +165,7 @@ services:
       - mongoDB
       - neo4jDB
 
-  afini-reservations-api:
+  afini-reservation-api:
     container_name: reservation-api
     image: afiniclub/reservation-api
     environment:
