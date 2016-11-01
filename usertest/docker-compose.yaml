@@ -101,7 +101,21 @@ services:
     environment:
       NODE_ENV:
     ports:
-      - 3001:3000
+      - 3001:3001
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  afini-trip-api:
+    container_name: trip-api
+    image: afiniclub/trip-api
+    environment:
+      NODE_ENV:
+    ports:
+      - 3014:3014
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
@@ -234,7 +248,7 @@ services:
     container_name: note-svc
     image: afiniclub/note-svc
     environment:
-      NODE_ENV:
+      NODE_ENV: dev_docker
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
@@ -250,9 +264,11 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
+      - postgresDB:docker-postgres
     depends_on:
       - rabbitMQ
       - mongoDB
+      - postgresDB
 
   afini-reservation-service:
     container_name: reservation-svc
@@ -266,9 +282,9 @@ services:
       - rabbitMQ
       - mongoDB
 
-  afini-user-service:
-    container_name: user-svc
-    image: afiniclub/user-svc
+  afini-billing-service:
+    container_name: billing-svc
+    image: afiniclub/billing-svc
     environment:
       NODE_ENV:
     links:
@@ -277,3 +293,27 @@ services:
     depends_on:
       - rabbitMQ
       - mongoDB
+
+  afini-trip-service:
+    container_name: trip-svc
+    image: afiniclub/trip-svc
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+# afini-user-service:
+#   container_name: user-svc
+#   image: afiniclub/user-svc
+#   environment:
+#     NODE_ENV:
+#   links:
+#     - rabbitMQ:docker-rabbitmq
+#     - mongoDB:docker-mongo
+#   depends_on:
+#     - rabbitMQ
+#     - mongoDB
