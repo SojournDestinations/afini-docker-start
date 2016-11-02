@@ -38,6 +38,12 @@ services:
     volumes:
       - ./data/neo4j:/data
 
+  redisDB:
+      container_name: shared-redis
+      image: redis:latest
+      ports:
+        - 6379:6379
+
   #Sites
   web-public:
     container_name: web-public
@@ -77,9 +83,11 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
+      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
+      - redisDB
 
   afini-contact-info-api:
     container_name: contact-info-api
@@ -91,9 +99,11 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
+      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
+      - redisDB
 
   afini-membership-account-api:
     container_name: mem-acct-api
@@ -105,9 +115,11 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
+      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
+      - redisDB
 
   afini-trip-api:
     container_name: trip-api
@@ -119,9 +131,11 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
+      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
+      - redisDB
 
   afini-note-api:
     container_name: note-api
@@ -132,8 +146,10 @@ services:
       - 3008:3008
     links:
       - mongoDB:docker-mongo
+      - redisDB:docker-redis
     depends_on:
       - mongoDB
+      - redisDB
 
   afini-payment-api:
     container_name: payment-api
@@ -144,8 +160,10 @@ services:
       - 3002:3002
     links:
       - mongoDB:docker-mongo
+      - redisDB:docker-redis
     depends_on:
       - mongoDB
+      - redisDB
 
   afini-pricing-api:
     container_name: pricing-api
@@ -158,10 +176,12 @@ services:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
       - postgresDB:docker-postgres
+      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
       - postgresDB
+      - redisDB
 
   afini-residence-api:
     container_name: residence-api
@@ -174,10 +194,12 @@ services:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
       - neo4jDB:docker-neo4j
+      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
       - neo4jDB
+      - redisDB
 
   afini-reservation-api:
     container_name: reservation-api
@@ -189,9 +211,11 @@ services:
     links:
       - mongoDB:docker-mongo
       - rabbitMQ:docker-rabbitmq
+      - redisDB:docker-redis
     depends_on:
       - mongoDB
       - rabbitMQ
+      - redisDB
 
   afini-user-api:
     container_name: user-api
@@ -203,9 +227,11 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
+      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
+      - redisDB
 
   #Services (RabbitMQ Handlers)
   afini-contact-info-service:
@@ -231,6 +257,20 @@ services:
     depends_on:
       - rabbitMQ
       - mongoDB
+
+  afini-itops-cache-service:
+    container_name: itops-cache-svc
+    image: afiniclub/itops-cache-svc
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+      - redisDB:docker-redis
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+      - redisDB
 
   afini-membership-account-service:
     container_name: mem-acct-svc
