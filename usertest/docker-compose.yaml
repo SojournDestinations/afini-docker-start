@@ -7,7 +7,7 @@ services:
     hostname: my-rabbit
     ports:
       # - 5672:5672
-      - 15672:15672
+      - 15673:15672
 
   mongoDB:
     container_name: shared-mongo
@@ -38,11 +38,11 @@ services:
     volumes:
       - ./data/neo4j:/data
 
-  redisDB:
-      container_name: shared-redis
-      image: redis:latest
-      ports:
-        - 6379:6379
+  redis:
+    container_name: shared-redis
+    image: redis:latest
+    ports:
+      - 6379:6379
 
   #Sites
   web-public:
@@ -83,11 +83,9 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
-      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
-      - redisDB
 
   afini-contact-info-api:
     container_name: contact-info-api
@@ -99,11 +97,9 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
-      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
-      - redisDB
 
   afini-membership-account-api:
     container_name: mem-acct-api
@@ -111,31 +107,13 @@ services:
     environment:
       NODE_ENV:
     ports:
-      - 3001:3001
+      - 3001:3000
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
-      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
-      - redisDB
-
-  afini-trip-api:
-    container_name: trip-api
-    image: afiniclub/trip-api
-    environment:
-      NODE_ENV:
-    ports:
-      - 3014:3014
-    links:
-      - rabbitMQ:docker-rabbitmq
-      - mongoDB:docker-mongo
-      - redisDB:docker-redis
-    depends_on:
-      - rabbitMQ
-      - mongoDB
-      - redisDB
 
   afini-note-api:
     container_name: note-api
@@ -146,24 +124,20 @@ services:
       - 3008:3008
     links:
       - mongoDB:docker-mongo
-      - redisDB:docker-redis
     depends_on:
       - mongoDB
-      - redisDB
 
-  afini-payment-api:
-    container_name: payment-api
-    image: afiniclub/payment-api
-    environment:
-      NODE_ENV:
-    ports:
-      - 3002:3002
-    links:
-      - mongoDB:docker-mongo
-      - redisDB:docker-redis
-    depends_on:
-      - mongoDB
-      - redisDB
+  # afini-payment-api:
+  #   container_name: payment-api
+  #   image: afiniclub/payment-api
+  #   environment:
+  #     NODE_ENV:
+  #   ports:
+  #     - 3002:3002
+  #   links:
+  #     - mongoDB:docker-mongo
+  #   depends_on:
+  #     - mongoDB
 
   afini-pricing-api:
     container_name: pricing-api
@@ -176,30 +150,40 @@ services:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
       - postgresDB:docker-postgres
-      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
       - postgresDB
-      - redisDB
+
+  afini-itops-api:
+    container_name: itops-api
+    image: afiniclub/itops-api
+    environment:
+      NODE_ENV:
+    ports:
+      - 3015:3015
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
 
   afini-residence-api:
     container_name: residence-api
     image: afiniclub/residence-api
     environment:
-      NODE_ENV:
+      NODE_ENV: test
     ports:
       - 3010:3010
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
       - neo4jDB:docker-neo4j
-      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
       - neo4jDB
-      - redisDB
 
   afini-reservation-api:
     container_name: reservation-api
@@ -211,11 +195,9 @@ services:
     links:
       - mongoDB:docker-mongo
       - rabbitMQ:docker-rabbitmq
-      - redisDB:docker-redis
     depends_on:
       - mongoDB
       - rabbitMQ
-      - redisDB
 
   afini-user-api:
     container_name: user-api
@@ -227,11 +209,47 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
-      - redisDB:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
-      - redisDB
+
+  afini-messaging-api:
+    container_name: messaging-api
+    image: afiniclub/messaging-api
+    environment:
+      NODE_ENV:
+    ports:
+      - 3013:3013
+    links:
+      - mongoDB:docker-mongo
+    depends_on:
+      - mongoDB
+
+  afini-trip-api:
+    container_name: trip-api
+    image: afiniclub/trip-api
+    environment:
+      NODE_ENV:
+    ports:
+      - 3014:3014
+    links:
+      - mongoDB:docker-mongo
+    depends_on:
+      - mongoDB
+
+  afini-external-residences-api:
+    container_name: ext-residence-api
+    image: afiniclub/ext-residence-api
+    environment:
+      NODE_ENV:
+    ports:
+      - 3016:3016
+    links:
+      - mongoDB:docker-mongo
+      - postgresDB:docker-postgres
+    depends_on:
+      - mongoDB
+      - postgresDB
 
   #Services (RabbitMQ Handlers)
   afini-contact-info-service:
@@ -266,11 +284,11 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
-      - redisDB:docker-redis
+      - redis:docker-redis
     depends_on:
       - rabbitMQ
       - mongoDB
-      - redisDB
+      - redis
 
   afini-membership-account-service:
     container_name: mem-acct-svc
@@ -288,7 +306,7 @@ services:
     container_name: note-svc
     image: afiniclub/note-svc
     environment:
-      NODE_ENV: dev_docker
+      NODE_ENV:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
@@ -304,15 +322,90 @@ services:
     links:
       - rabbitMQ:docker-rabbitmq
       - mongoDB:docker-mongo
-      - postgresDB:docker-postgres
     depends_on:
       - rabbitMQ
       - mongoDB
+
+  afini-pricing-cache-service:
+    container_name: pricing-cache-svc
+    image: afiniclub/pricing-cache-svc
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - postgresDB:docker-postgres
+    depends_on:
+      - rabbitMQ
       - postgresDB
 
   afini-reservation-service:
     container_name: reservation-svc
     image: afiniclub/reservation-svc
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  # afini-user-service:
+  #   container_name: user-svc
+  #   #image: afiniclub/user-svc
+  #   volumes:
+  #     - ../../afini-user-rmqhandler:/usr/src/app
+  #   build: ../../afini-user-rmqhandler
+  #   environment:
+  #     NODE_ENV:
+  #   links:
+  #     - rabbitMQ:docker-rabbitmq
+  #     - mongoDB:docker-mongo
+  #   depends_on:
+  #     - rabbitMQ
+  #     - mongoDB
+
+  afini-messaging-service:
+    container_name: messaging-svc
+    image: afiniclub/messaging-svc
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+
+  afini-residence-service:
+    container_name: residence-svc
+    image: afiniclub/residence-svc
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - mongoDB:docker-mongo
+      - neo4jDB:docker-neo4j
+    depends_on:
+      - rabbitMQ
+      - mongoDB
+      - neo4jDB
+
+  afini-ext-residence-service:
+    container_name: ext-residence-svc
+    image: afiniclub/ext-residence-svc
+    environment:
+      NODE_ENV:
+    links:
+      - rabbitMQ:docker-rabbitmq
+      - postgresDB:docker-postgres
+    depends_on:
+      - rabbitMQ
+      - postgresDB
+
+  afini-audit-service:
+    container_name: audit-svc
+    image: afiniclub/audit-svc
     environment:
       NODE_ENV:
     links:
@@ -345,15 +438,3 @@ services:
     depends_on:
       - rabbitMQ
       - mongoDB
-
-# afini-user-service:
-#   container_name: user-svc
-#   image: afiniclub/user-svc
-#   environment:
-#     NODE_ENV:
-#   links:
-#     - rabbitMQ:docker-rabbitmq
-#     - mongoDB:docker-mongo
-#   depends_on:
-#     - rabbitMQ
-#     - mongoDB
